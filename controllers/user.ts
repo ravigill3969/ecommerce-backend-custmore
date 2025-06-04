@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import { catchAsync } from "../utils/asyncHandler";
 import { NextFunction, Request, Response } from "express";
 import { AppError } from "../utils/AppError";
-import sendResponse from "../utils/sendResponse";
 
 function accessToken(id: string) {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {
@@ -47,6 +46,7 @@ export const register = catchAsync(
       name,
       email,
       password: hashedPassword,
+      isCustmore: true
     });
 
     if (!user) {
@@ -80,5 +80,15 @@ export const login = catchAsync(
     }
 
     sendResWithCookies(existingUser._id.toString(), res);
+  }
+);
+
+export const verifyUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user;
+    res.status(200).json({
+      message: "verified",
+      userId,
+    });
   }
 );

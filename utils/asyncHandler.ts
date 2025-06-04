@@ -1,17 +1,10 @@
 // src/middleware/asyncHandler.ts
 import { Request, Response, NextFunction } from "express";
 
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: string;
-    [key: string]: any;
-  };
-}
+
 
 type AsyncRequestHandler = (
-  req: Request | AuthenticatedRequest,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => Promise<any>;
@@ -25,7 +18,7 @@ type AsyncRequestHandler = (
  */
 export const catchAsync = (fn: AsyncRequestHandler) => {
   return (
-    req: Request | AuthenticatedRequest,
+    req: Request,
     res: Response,
     next: NextFunction
   ): void => {
