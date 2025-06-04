@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 interface Address {
   street: string;
@@ -14,6 +14,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   address: Address;
+  prevOrders: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,6 +51,9 @@ const userSchema = new Schema<IUser>(
     address: {
       type: addressSchema,
       default: {},
+    },
+    prevOrders: {
+      type: [Schema.Types.ObjectId],
     },
   },
   {

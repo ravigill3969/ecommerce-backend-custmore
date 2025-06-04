@@ -7,6 +7,8 @@ import cors from "cors";
 import { AppError } from "./utils/AppError";
 import { errorHandler } from "./utils/errorHandler";
 import userRouter from "./routes/user";
+import productRouter from "./routes/product";
+import cartRouter from "./routes/cart";
 
 dotenv.config();
 
@@ -38,6 +40,8 @@ app.listen(PORT, () => {
 });
 
 app.use("/auth/v1", userRouter);
+app.use("/product/v1", productRouter);
+app.use("/cart/v1", cartRouter);
 app.use(errorHandler);
 
 app.all("{*splat}", (req, _, next) => {
