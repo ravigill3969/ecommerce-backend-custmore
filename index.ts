@@ -55,13 +55,23 @@ server.listen(PORT, () => {
 });
 
 io.on("connection", (socket) => {
-  socket.on("cart-increment", ({ productId, userId }) => {
+  socket.on("cart-increment", async ({ productId, userId }) => {
     console.log("Message received:", productId, userId);
-    incrementProductQuantity(productId, userId);
+    await incrementProductQuantity(productId, userId);
+    socket.emit("cart-updated-increment", {
+      success: true,
+      productId,
+      message: "Item incremented",
+    });
   });
-  socket.on("cart-decrement", ({ productId, userId }) => {
+  socket.on("cart-decrement", async ({ productId, userId }) => {
     console.log("Message received decrement:", productId, userId);
-    decrementProductQuantity(productId, userId);
+    await decrementProductQuantity(productId, userId);
+    socket.emit("cart-updated-decrement", {
+      success: true,
+      productId,
+      message: "Item decremented",
+    });
   });
 
   socket.on("disconnect", () => {
