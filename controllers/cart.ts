@@ -2,6 +2,8 @@
 import { Request, Response, NextFunction } from "express";
 import { Cart } from "../models/cart";
 import { catchAsync } from "../utils/asyncHandler";
+import { AppError } from "../utils/AppError";
+import { Product } from "./product";
 
 export const addToCart = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -43,4 +45,66 @@ export const addToCart = catchAsync(
   }
 );
 
+export const getCart = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const cart = await Cart.findOne({ userId: req.user });
 
+    if (!cart) {
+      return next(new AppError("No cart found!", 404));
+    }
+
+    const products = await Promise.all(
+      cart.items.map((item) => Product.findById(item.productId))
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Cart retrieved",
+      cart,
+      products,
+    });
+  }
+);
+
+export const incrementProductQuantity = async (
+  productId: string,
+  userId: string
+): Promise<void> => {
+  const cart = await Cart.findOne({ userId });
+
+  if (!cart) return;
+
+  const item = cart.items.find((item) =>
+    item.productId.toString() === productId.toString()
+  );
+
+  if (item) {
+    item.quantity += 1;
+    await cart.save();
+  }
+};
+
+export const decrementProductQuantity = async (
+  productId: string,
+  userId: string
+): Promise<void> => {
+  const cart = await Cart.findOne({ userId });
+
+  if (!cart) return;
+
+  const itemIndex = cart.items.findIndex(
+    (item) => item.productId.toString() === productId.toString()
+  );
+
+  if (itemIndex === -1) return;
+
+  const item = cart.items[itemIndex];
+
+  if (item.quantity === 1) {
+    cart.items.splice(itemIndex, 1);
+  } else {
+    item.quantity -= 1;
+  }
+
+  await cart.save();
+};

@@ -3,12 +3,18 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import http from "http";
+import { Server } from "socket.io";
 
 import { AppError } from "./utils/AppError";
 import { errorHandler } from "./utils/errorHandler";
 import userRouter from "./routes/user";
 import productRouter from "./routes/product";
 import cartRouter from "./routes/cart";
+import {
+  decrementProductQuantity,
+  incrementProductQuantity,
+} from "./controllers/cart";
 
 dotenv.config();
 
@@ -23,6 +29,15 @@ mongoose
 
 const app = express();
 
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -35,8 +50,23 @@ app.use(
 
 const PORT = process.env.PORT;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log("server is running:", PORT);
+});
+
+io.on("connection", (socket) => {
+  socket.on("cart-increment", ({ productId, userId }) => {
+    console.log("Message received:", productId, userId);
+    incrementProductQuantity(productId, userId);
+  });
+  socket.on("cart-decrement", ({ productId, userId }) => {
+    console.log("Message received decrement:", productId, userId);
+    decrementProductQuantity(productId, userId);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  });
 });
 
 app.use("/auth/v1", userRouter);
@@ -48,7 +78,7 @@ app.all("{*splat}", (req, _, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server`, 404));
 });
 
-process.on("unhandledRejection", (reason, promise) => {
+process.on("unhandledRejection", (reason) => {
   console.error("Unhandled Rejection:", reason);
   process.exit(1);
 });

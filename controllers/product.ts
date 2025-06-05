@@ -3,7 +3,7 @@ import { catchAsync } from "../utils/asyncHandler";
 import mongoose from "mongoose";
 import { AppError } from "../utils/AppError";
 
-const Product = mongoose.model(
+export const Product = mongoose.model(
   "Product",
   new mongoose.Schema({}, { strict: false })
 );

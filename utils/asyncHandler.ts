@@ -6,7 +6,7 @@ import { Request, Response, NextFunction } from "express";
 type AsyncRequestHandler = (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => Promise<any>;
 
 /**
@@ -16,7 +16,7 @@ type AsyncRequestHandler = (
  * @param fn Async function to wrap
  * @returns Express middleware function
  */
-export const catchAsync = (fn: AsyncRequestHandler) => {
+export const catchAsync = (fn: any) => {
   return (
     req: Request,
     res: Response,
