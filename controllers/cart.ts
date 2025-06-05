@@ -69,34 +69,36 @@ export const getCart = catchAsync(
 export const incrementProductQuantity = async (
   productId: string,
   userId: string
-): Promise<void> => {
+): Promise<boolean> => {
   const cart = await Cart.findOne({ userId });
 
-  if (!cart) return;
+  if (!cart) return false;
 
-  const item = cart.items.find((item) =>
-    item.productId.toString() === productId.toString()
+  const item = cart.items.find(
+    (item) => item.productId.toString() === productId.toString()
   );
 
   if (item) {
     item.quantity += 1;
     await cart.save();
+    return true;
   }
+  return false;
 };
 
 export const decrementProductQuantity = async (
   productId: string,
   userId: string
-): Promise<void> => {
+): Promise<boolean> => {
   const cart = await Cart.findOne({ userId });
 
-  if (!cart) return;
+  if (!cart) return false;
 
   const itemIndex = cart.items.findIndex(
     (item) => item.productId.toString() === productId.toString()
   );
 
-  if (itemIndex === -1) return;
+  if (itemIndex === -1) return false;
 
   const item = cart.items[itemIndex];
 
@@ -107,4 +109,5 @@ export const decrementProductQuantity = async (
   }
 
   await cart.save();
+  return true;
 };
