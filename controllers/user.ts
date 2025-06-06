@@ -46,7 +46,7 @@ export const register = catchAsync(
       name,
       email,
       password: hashedPassword,
-      isCustmore: true
+      isCustmore: true,
     });
 
     if (!user) {
@@ -89,6 +89,22 @@ export const verifyUser = catchAsync(
     res.status(200).json({
       message: "verified",
       userId,
+    });
+  }
+);
+
+export const getCurrentUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user;
+    const user = await User.findById({ userId });
+
+    if (!user) {
+      return next(new AppError("No user found", 404));
+    }
+
+    res.status(200).json({
+      message: "verified",
+      user,
     });
   }
 );
