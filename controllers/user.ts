@@ -96,7 +96,8 @@ export const verifyUser = catchAsync(
 export const getCurrentUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user;
-    const user = await User.findById({ userId });
+    console.log(userId)
+    const user = await User.findById(userId);
 
     if (!user) {
       return next(new AppError("No user found", 404));
