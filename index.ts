@@ -15,6 +15,8 @@ import {
   decrementProductQuantity,
   incrementProductQuantity,
 } from "./controllers/cart";
+import { createPaymentIntent } from "./controllers/stripe";
+import stripeRouter from "./routes/stripe";
 
 dotenv.config();
 
@@ -99,6 +101,7 @@ io.on("connection", (socket) => {
 app.use("/auth/v1", userRouter);
 app.use("/product/v1", productRouter);
 app.use("/cart/v1", cartRouter);
+app.use("/payment/v1", stripeRouter);
 
 app.use(errorHandler);
 

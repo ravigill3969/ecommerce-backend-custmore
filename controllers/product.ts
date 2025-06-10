@@ -3,9 +3,45 @@ import { catchAsync } from "../utils/asyncHandler";
 import mongoose from "mongoose";
 import { AppError } from "../utils/AppError";
 
-export const Product = mongoose.model(
+// Base product structure (no Mongoose methods)
+export interface IProduct {
+  productName: string;
+  sellerID: mongoose.Types.ObjectId;
+  price: number;
+  stockQuantity: number;
+  category: string;
+  brand: string;
+  description: string;
+  photoURLs: string[];
+  isActive: boolean;
+  stripeProductId?: string;
+}
+
+export interface IProductDocument extends IProduct, mongoose.Document {}
+
+const productSchema = new mongoose.Schema<IProductDocument>(
+  {
+    productName: { type: String, required: true },
+    sellerID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    price: { type: Number, required: true },
+    stockQuantity: { type: Number, required: true },
+    category: { type: String, required: true },
+    brand: { type: String, required: true },
+    description: { type: String, required: true },
+    photoURLs: [{ type: String }],
+    isActive: { type: Boolean, default: true },
+    stripeProductId: { type: String, default: null },
+  },
+  { timestamps: true }
+);
+
+export const Product = mongoose.model<IProductDocument>(
   "Product",
-  new mongoose.Schema({}, { strict: false })
+  productSchema
 );
 
 export const getAllProducts = catchAsync(
