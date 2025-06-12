@@ -46,7 +46,7 @@ export const createPaymentIntent = catchAsync(
 
       const price = await stripe.prices.create({
         product: product.stripeProductId,
-        unit_amount: Math.round(product.price * 100), // cents
+        unit_amount: Math.round(product.price * 100),
         currency: "usd",
       });
 
