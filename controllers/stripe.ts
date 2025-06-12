@@ -64,13 +64,48 @@ export const createPaymentIntent = catchAsync(
       payment_method_types: ["card"],
       line_items,
       mode: "payment",
-      success_url: `${process.env.FRONTEND_URL}/`,
+      success_url: `${process.env.FRONTEND_URL}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/cart`,
     });
 
     res.status(200).json({
       success: true,
       url: session.url,
+    });
+  }
+);
+
+export const handle_payment_success = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { sessionId } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: "Missing sessionId" });
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    if (!session || !session.payment_intent) {
+      next(new AppError("Session not found or incomplete", 404));
+      return;
+    }
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(
+      session.payment_intent as string
+    );
+
+    if (paymentIntent.status !== "succeeded") {
+      return next(new AppError("Payment not completed", 402));
+    }
+
+    // Optional: forward event to Kafka here
+    // await kafkaProducer.send({ ...paymentIntent, session });
+
+    return res.status(200).json({
+      paid: true,
+      amount: paymentIntent.amount,
+      email: session.customer_details?.email,
+      metadata: session.metadata,
     });
   }
 );

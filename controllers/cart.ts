@@ -53,6 +53,8 @@ export const getCart = catchAsync(
       return next(new AppError("No cart found!", 404));
     }
 
+    console.log(cart);
+
     const products = await Promise.all(
       cart.items.map((item) => Product.findById(item.productId))
     );
