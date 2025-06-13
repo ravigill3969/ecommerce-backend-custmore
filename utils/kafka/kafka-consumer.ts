@@ -1,3 +1,4 @@
+import { Cart } from "../../models/cart";
 import kafka from "./kafka-client";
 
 const groupId = "cart-success";
@@ -14,7 +15,31 @@ async function kafkaConsumer() {
 
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
-      console.log(topic, partition);
+      try {
+        const rawValue = message.value?.toString();
+        if (!rawValue) {
+          console.warn("Received empty message");
+          return;
+        }
+
+        const { cartID } = JSON.parse(rawValue);
+
+        console.log(`[Kafka] Updating cart ${cartID} to status "Paid"`);
+
+        const cart = await Cart.findOneAndUpdate(
+          { _id: cartID },
+          { $set: { status: "Paid" } },
+          { new: true }
+        );
+
+        if (!cart) {
+          console.warn(`[Kafka] Cart not found for ID: ${cartID}`);
+        } else {
+          console.log(`[Kafka] Cart updated: ${cart._id} -> ${cart.status}`);
+        }
+      } catch (error) {
+        console.error("Kafka consumer error:", error);
+      }
     },
   });
 }

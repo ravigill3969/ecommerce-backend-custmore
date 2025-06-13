@@ -10,6 +10,7 @@ interface CartItem {
 export interface CartDocument extends Document {
   userId: Types.ObjectId;
   items: CartItem[];
+  status: "Initialized" | "Paid" | "On the way" | "Delivered";
 }
 
 const CartItemSchema = new Schema<CartItem>(
@@ -28,10 +29,16 @@ const CartSchema = new Schema<CartDocument>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
     },
+    status: {
+      type: String,
+      enum: ["Initialized", "Paid", "On the way", "Delivered"],
+      default: "Initialized",
+    },
+
     items: [CartItemSchema],
   },
+
   { timestamps: true }
 );
 

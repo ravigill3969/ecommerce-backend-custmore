@@ -17,6 +17,7 @@ import {
 } from "./controllers/cart";
 import { createPaymentIntent } from "./controllers/stripe";
 import stripeRouter from "./routes/stripe";
+import kafkaConsumer from "./utils/kafka/kafka-consumer";
 
 dotenv.config();
 
@@ -52,8 +53,17 @@ app.use(
 
 const PORT = process.env.PORT;
 
+(async () => {
+  try {
+    console.log("trying to consumer kafka");
+    await kafkaConsumer();
+  } catch (err) {
+    console.error("Error starting Kafka consumer or server:", err);
+  }
+})();
+
 server.listen(PORT, () => {
-  console.log("server is running:", PORT);
+  console.log(`Server running on port ${PORT}`);
 });
 
 io.on("connection", (socket) => {

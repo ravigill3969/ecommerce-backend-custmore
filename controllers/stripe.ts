@@ -3,18 +3,26 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { Product } from "../controllers/product";
+import KafkaProducer from "../utils/kafka/kafka-producer";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 type CartItem = {
   productId: string;
   quantity: number;
-}[];
+};
+
+type CreatePaymentIntentBodyT = {
+  data: CartItem[];
+  cartId: string;
+};
 
 export const createPaymentIntent = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const cartItems: CartItem = req.body;
-    const productIds = cartItems.map((item) => item.productId);
+    const { data, cartId }: CreatePaymentIntentBodyT = req.body;
+    console.log(data);
+    console.log(cartId);
+    const productIds = data.map((item) => item.productId);
     const products = await Product.find({
       _id: { $in: productIds },
     });
@@ -25,7 +33,7 @@ export const createPaymentIntent = catchAsync(
 
     const line_items = [];
 
-    for (const cartItem of cartItems) {
+    for (const cartItem of data) {
       const product = products.find(
         (p) => p._id!.toString() === cartItem.productId
       );
@@ -66,6 +74,7 @@ export const createPaymentIntent = catchAsync(
       mode: "payment",
       success_url: `${process.env.FRONTEND_URL}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.FRONTEND_URL}/cart`,
+      metadata: { cartId },
     });
 
     res.status(200).json({
@@ -86,8 +95,7 @@ export const handle_payment_success = catchAsync(
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!session || !session.payment_intent) {
-      next(new AppError("Session not found or incomplete", 404));
-      return;
+      return next(new AppError("Session not found or incomplete", 404));
     }
 
     const paymentIntent = await stripe.paymentIntents.retrieve(
@@ -98,8 +106,19 @@ export const handle_payment_success = catchAsync(
       return next(new AppError("Payment not completed", 402));
     }
 
-    // Optional: forward event to Kafka here
-    // await kafkaProducer.send({ ...paymentIntent, session });
+    const cartID = session.metadata?.cartId;
+
+    if (!cartID) {
+      console.warn(`No cart_id found in metadata for session ${sessionId}`);
+      return res.status(400).json({ error: "Missing cart_id in metadata" });
+    }
+
+    try {
+      await KafkaProducer(cartID);
+    } catch (err) {
+      console.error("KafkaProducer failed:", err);
+      return next(new AppError("Internal error: Kafka dispatch failed", 500));
+    }
 
     return res.status(200).json({
       paid: true,

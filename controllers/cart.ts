@@ -11,7 +11,7 @@ export const addToCart = catchAsync(
 
     const { productId, price } = req.body;
 
-    const existingCart = await Cart.findOne({ userId });
+    const existingCart = await Cart.findOne({ userId, status: "Initialized" });
 
     if (!existingCart) {
       await Cart.create({
@@ -47,7 +47,12 @@ export const addToCart = catchAsync(
 
 export const getCart = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const cart = await Cart.findOne({ userId: req.user });
+    const cart = await Cart.findOne({
+      userId: req.user,
+      status: "Initialized",
+    });
+
+    console.log(cart);
 
     if (!cart) {
       return next(new AppError("No cart found!", 404));
@@ -72,7 +77,7 @@ export const incrementProductQuantity = async (
   productId: string,
   userId: string
 ): Promise<boolean> => {
-  const cart = await Cart.findOne({ userId });
+  const cart = await Cart.findOne({ userId, status: "Initialized" });
 
   if (!cart) return false;
 
@@ -92,7 +97,7 @@ export const decrementProductQuantity = async (
   productId: string,
   userId: string
 ): Promise<boolean> => {
-  const cart = await Cart.findOne({ userId });
+  const cart = await Cart.findOne({ userId, status: "Initialized" });
 
   if (!cart) return false;
 
