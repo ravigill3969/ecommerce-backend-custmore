@@ -96,7 +96,7 @@ export const verifyUser = catchAsync(
 export const getCurrentUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user;
-    console.log(userId)
+    console.log(userId);
     const user = await User.findById(userId);
 
     if (!user) {
@@ -106,6 +106,37 @@ export const getCurrentUser = catchAsync(
     res.status(200).json({
       message: "verified",
       user,
+    });
+  }
+);
+
+export const updateCurrentUser = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user;
+
+    const { name, email } = req.body;
+
+    if (!name && !email) {
+      return next(new AppError("Please provide name or email to update", 400));
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { name, email },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select("-password");
+
+    if (!updatedUser) {
+      return next(new AppError("User not found", 404));
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "User updated successfully",
+      user: updatedUser,
     });
   }
 );
