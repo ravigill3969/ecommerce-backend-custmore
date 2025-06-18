@@ -3,6 +3,8 @@ import {
   getCurrentUser,
   login,
   register,
+  updateCurrentUser,
+  updateUserPassword,
   verifyUser,
 } from "../controllers/user";
 import verifyToken from "../utils/verifyToken";
@@ -13,6 +15,7 @@ userRouter.post("/register", register);
 userRouter.post("/login", login);
 userRouter.get("/verify-user", verifyToken, verifyUser);
 userRouter.get("/get-current-user", verifyToken, getCurrentUser);
+userRouter.put("/update-current-user", verifyToken, updateCurrentUser);
+userRouter.put("/update-current-user-password", verifyToken, updateUserPassword);
 
 export default userRouter;
-    

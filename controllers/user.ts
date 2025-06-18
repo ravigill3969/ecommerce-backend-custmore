@@ -96,7 +96,6 @@ export const verifyUser = catchAsync(
 export const getCurrentUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user;
-    console.log(userId);
     const user = await User.findById(userId);
 
     if (!user) {
@@ -115,6 +114,7 @@ export const updateCurrentUser = catchAsync(
     const userId = req.user;
 
     const { name, email } = req.body;
+    console.log(req.body);
 
     if (!name && !email) {
       return next(new AppError("Please provide name or email to update", 400));
@@ -138,5 +138,36 @@ export const updateCurrentUser = catchAsync(
       message: "User updated successfully",
       user: updatedUser,
     });
+  }
+);
+
+export const updateUserPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
+
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      return next(new AppError("Please fill in all password fields", 400));
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      return next(new AppError("New passwords do not match", 400));
+    }
+
+    const user = await User.findById(req.user).select("+password");
+    if (!user) {
+      return next(new AppError("User not found", 404));
+    }
+
+    const isCorrect = await bcrypt.compare(currentPassword, user.password);
+    if (!isCorrect) {
+      return next(new AppError("Your current password is incorrect", 401));
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    user.password = hashedPassword;
+    await user.save();
+
+    sendResWithCookies(user._id, res);
   }
 );

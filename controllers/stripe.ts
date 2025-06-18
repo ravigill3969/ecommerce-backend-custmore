@@ -4,7 +4,7 @@ import { catchAsync } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { Product } from "../controllers/product";
 import KafkaProducer from "../utils/kafka/kafka-producer";
-
+  
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 type CartItem = {
@@ -118,7 +118,7 @@ export const handle_payment_success = catchAsync(
     } catch (err) {
       console.error("KafkaProducer failed:", err);
       return next(new AppError("Internal error: Kafka dispatch failed", 500));
-    }
+    } 
 
     return res.status(200).json({
       paid: true,

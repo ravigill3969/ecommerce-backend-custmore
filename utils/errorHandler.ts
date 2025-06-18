@@ -89,12 +89,18 @@ const handleMongoDBCastError = (err: MongoCastError): AppError => {
   return new AppError(message, 400);
 };
 
+const handleMongoDBValidatorError = (err: MongoCastError): AppError => {
+  const message = ` ${err.path}: is required `;
+  return new AppError(message, 400);
+};
+
 export const errorHandler = (
   err: any,
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
+  console.log(err.name);
   let error = err;
   error.statusCode = error.statusCode || 500;
   error.status = error.status || "error";
@@ -106,7 +112,6 @@ export const errorHandler = (
     error = handleMongoDBValidationError(error);
   if (error.name === "CastError")
     error = handleMongoDBCastError(error as MongoCastError);
-
 
   if (error.name === "JsonWebTokenError")
     error = new AppError("Invalid token. Please log in again!", 401);
