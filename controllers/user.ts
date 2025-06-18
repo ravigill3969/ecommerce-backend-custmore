@@ -4,26 +4,42 @@ import jwt from "jsonwebtoken";
 import { catchAsync } from "../utils/asyncHandler";
 import { NextFunction, Request, Response } from "express";
 import { AppError } from "../utils/AppError";
+import redis from "../utils/redis/i";
 
 function accessToken(id: string) {
-  return jwt.sign({ id }, process.env.JWT_SECRET!, {
+  return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET!, {
+    expiresIn: "3d",
+  });
+}
+function refreshToken(id: string) {
+  return jwt.sign({ id }, process.env.REFRESH_TOKEN_SECRET!, {
     expiresIn: "30d",
   });
 }
 
-export function sendResWithCookies(id: string, res: Response) {
-  const token = accessToken(id);
+export async function sendResWithCookies(id: string, res: Response) {
+  const access = accessToken(id);
+  const refresh = refreshToken(id);
 
-  res.cookie("etoken", token, {
+  await redis.set(`refresh:${id}`, refresh, { ex: 30 * 24 * 60 * 60 });
+
+  res.cookie("access_token", access, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 15 * 60 * 1000,
+  });
+
+  res.cookie("refresh_token", refresh, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
   res.status(200).json({
     status: true,
-    message: "Success",
+    message: "Login success",
   });
 }
 

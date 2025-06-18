@@ -15,15 +15,15 @@ declare global {
 
 const verifyToken = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    // Ensure cookie-parser middleware is used in your app to have req.cookies populated
-    const token = req.cookies?.etoken;
+    const token = req.cookies?.access_token;
+
+    console.log(token);
 
     if (!token) {
       return next(new AppError("Unauthorized", 401));
     }
 
-    // Verify token and extract payload
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as {
       id: string;
     };
 
