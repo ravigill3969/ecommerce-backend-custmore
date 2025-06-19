@@ -3,21 +3,20 @@ import jwt from "jsonwebtoken";
 import User from "../models/user";
 import { catchAsync } from "./asyncHandler";
 import { AppError } from "./AppError";
+import redis from "./redis/i";
+import { sendResWithCookies } from "../controllers/user";
 
-// Extend Express Request interface to include user property
 declare global {
   namespace Express {
     interface Request {
-      user: string; // User id as string
+      user: string;
     }
   }
 }
 
-const verifyToken = catchAsync(
+const accessToken = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies?.access_token;
-
-    console.log(token);
 
     if (!token) {
       return next(new AppError("Unauthorized", 401));
@@ -27,7 +26,6 @@ const verifyToken = catchAsync(
       id: string;
     };
 
-    // Find user by id in DB
     const user = await User.findById(decoded.id);
 
     if (!user) {
@@ -40,4 +38,31 @@ const verifyToken = catchAsync(
   }
 );
 
-export default verifyToken;
+export const refreshToken = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies?.refresh_token;
+
+    if (!token) {
+      return next(new AppError("Unauthorized", 401));
+    }
+
+    const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET!) as {
+      id: string;
+    };
+    const redisStoredToken = await redis.get(`refresh:${decoded.id}`);
+
+    if (redisStoredToken != token) {
+      return next(new AppError("Please login", 401));
+    }
+
+    const user = await User.findById(decoded.id);
+
+    if (!user) {
+      return next(new AppError("User no longer exists!", 401));
+    }
+
+    sendResWithCookies(decoded.id, res);
+  }
+);
+
+export default accessToken;

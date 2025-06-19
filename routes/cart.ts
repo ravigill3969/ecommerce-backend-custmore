@@ -1,10 +1,10 @@
 import express from "express";
-import verifyToken from "../utils/verifyToken";
+import accessToken from "../utils/verifyToken";
 import { addToCart, getCart } from "../controllers/cart";
 
 const cartRouter = express.Router();
 
-cartRouter.post("/create-cart", verifyToken, addToCart);
-cartRouter.get("/get-cart", verifyToken, getCart);
+cartRouter.post("/create-cart", accessToken, addToCart);
+cartRouter.get("/get-cart", accessToken, getCart);
 
 export default cartRouter;
