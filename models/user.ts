@@ -15,6 +15,7 @@ export interface IUser extends Document {
   password: string;
   address: Address;
   prevOrders: Types.ObjectId[];
+  wishList: Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +56,7 @@ const userSchema = new Schema<IUser>(
     prevOrders: {
       type: [Schema.Types.ObjectId],
     },
+    wishList: [{ type: Schema.Types.ObjectId, ref: "Product" }],
   },
   {
     timestamps: true,

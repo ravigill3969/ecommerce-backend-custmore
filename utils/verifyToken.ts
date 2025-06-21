@@ -49,6 +49,7 @@ export const refreshToken = catchAsync(
     const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET!) as {
       id: string;
     };
+    
     const redisStoredToken = await redis.get(`refresh:${decoded.id}`);
 
     if (redisStoredToken != token) {

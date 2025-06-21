@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { catchAsync } from "../utils/asyncHandler";
 import mongoose from "mongoose";
 import { AppError } from "../utils/AppError";
+import User from "../models/user";
 
 // Base product structure (no Mongoose methods)
 export interface IProduct {
@@ -70,6 +71,116 @@ export const getProductWithId = catchAsync(
     res.status(200).json({
       success: true,
       product,
+    });
+  }
+);
+
+export const addProductToUserWishList = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { productId } = req.body;
+
+    if (!productId) {
+      return next(new AppError("Product is required", 403));
+    }
+
+    await User.findByIdAndUpdate(req.user, {
+      $addToSet: { wishList: productId },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "added to wishlist",
+    });
+  }
+);
+
+export const removeProductFromUserWishList = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { productId } = req.body;
+
+    if (!productId) {
+      return next(new AppError("Product is required", 403));
+    }
+
+    await User.findByIdAndUpdate(req.user, {
+      $pull: { wishList: productId },
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "removed from wishlist",
+    });
+  }
+);
+
+export const getRecentlyAddedProducts = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const limit = parseInt(req.query.limit as string) || 10; // optional limit from query string
+
+    const products = await Product.find()
+      .sort({ createdAt: -1 }) // newest first
+      .limit(limit);
+
+    res.status(200).json({
+      status: "success",
+      results: products.length,
+      data: {
+        products,
+      },
+    });
+  }
+);
+
+export const searchProducts = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const {
+      q,
+      category,
+      minPrice,
+      maxPrice,
+      sortBy = "createdAt",
+      order = "desc",
+      page = "1",
+      limit = "10",
+    } = req.query;
+
+    const filter: any = {};
+
+    if (q) {
+      filter.$or = [
+        { name: { $regex: q, $options: "i" } },
+        { description: { $regex: q, $options: "i" } },
+      ];
+    }
+
+    if (category) {
+      filter.category = category;
+    }
+
+    if (minPrice || maxPrice) {
+      filter.price = {};
+      if (minPrice) filter.price.$gte = Number(minPrice);
+      if (maxPrice) filter.price.$lte = Number(maxPrice);
+    }
+
+    const pageNumber = parseInt(page as string);
+    const pageSize = parseInt(limit as string);
+    const skip = (pageNumber - 1) * pageSize;
+
+    const products = await Product.find(filter)
+      .sort({ [sortBy as string]: order === "asc" ? 1 : -1 })
+      .skip(skip)
+      .limit(pageSize);
+
+    const total = await Product.countDocuments(filter);
+
+    res.status(200).json({
+      status: "success",
+      results: products.length,
+      page: pageNumber,
+      totalPages: Math.ceil(total / pageSize),
+      totalItems: total,
+      data: { products },
     });
   }
 );
