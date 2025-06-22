@@ -1,4 +1,5 @@
 import { Cart } from "../../models/cart";
+import User from "../../models/user";
 import kafka from "./kafka-client";
 
 const groupId = "cart-success";
@@ -22,7 +23,7 @@ async function kafkaConsumer() {
           return;
         }
 
-        const { cartID } = JSON.parse(rawValue);
+        const { cartID, userID } = JSON.parse(rawValue);
 
         console.log(`[Kafka] Updating cart ${cartID} to status "Paid"`);
 
@@ -32,10 +33,21 @@ async function kafkaConsumer() {
           { new: true }
         );
 
+        const user = await User.findByIdAndUpdate(userID, {
+          $set: { prevOrders: cartID },
+        });
+
         if (!cart) {
           console.warn(`[Kafka] Cart not found for ID: ${cartID}`);
         } else {
           console.log(`[Kafka] Cart updated: ${cart._id} -> ${cart.status}`);
+        }
+        if (!user) {
+          console.warn(`[Kafka] user not found for ID: ${userID}`);
+        } else {
+          console.log(
+            `[Kafka] user updated: ${user._id} -> ${user.prevOrders}`
+          );
         }
       } catch (error) {
         console.error("Kafka consumer error:", error);

@@ -4,6 +4,7 @@ import { Cart } from "../models/cart";
 import { catchAsync } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { Product } from "./product";
+import User from "../models/user";
 
 export const addToCart = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -114,3 +115,27 @@ export const decrementProductQuantity = async (
   await cart.save();
   return true;
 };
+
+export const getAlreadyPaidOrder = catchAsync(
+  
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = await User.findById(req.user);
+
+    if (!user) {
+      return next(new AppError("User no longer exists!", 401));
+    }
+
+    const cartIDs = user.prevOrders;
+
+    const carts = await Cart.find({
+      _id: { $in: cartIDs },
+    }).lean();
+
+    res.status(200).json({
+      status: "success",
+      message: "all prev orders reterieved",
+      carts
+    });
+  }
+);
+

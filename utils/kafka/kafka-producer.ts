@@ -1,6 +1,6 @@
 import kafka from "./kafka-client";
 
-async function KafkaProducer(cartID: string) {
+async function KafkaProducer(cartID: string, userID: string) {
   const producer = kafka.producer();
 
   console.log("Connecting Producer");
@@ -12,7 +12,7 @@ async function KafkaProducer(cartID: string) {
     messages: [
       {
         key: "payment-update",
-        value: JSON.stringify({ cartID }),
+        value: JSON.stringify({ cartID, userID }),
       },
     ],
   });

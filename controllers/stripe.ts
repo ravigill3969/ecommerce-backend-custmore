@@ -110,7 +110,7 @@ export const handle_payment_success = catchAsync(
     }
 
     try {
-      await KafkaProducer(cartID);
+      await KafkaProducer(cartID, req.user);
     } catch (err) {
       return next(new AppError("Internal error: Kafka dispatch failed", 500));
     }
