@@ -1,0 +1,5 @@
+{
+  "disable-hardware-acceleration": false,
+  "terminal.integrated.gpuAcceleration": "on",
+  "editor.gpuAcceleration": "auto"
+}

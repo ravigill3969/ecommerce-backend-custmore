@@ -40,7 +40,7 @@ export const addToCart = catchAsync(
 
     return res.status(200).json({
       success: true,
-      message: "Cart already exists or updated",
+      message: "Cart updated",
     });
   }
 );
@@ -52,13 +52,9 @@ export const getCart = catchAsync(
       status: "Initialized",
     });
 
-    console.log(cart);
-
     if (!cart) {
       return next(new AppError("No cart found!", 404));
     }
-
-    console.log(cart);
 
     const products = await Promise.all(
       cart.items.map((item) => Product.findById(item.productId))

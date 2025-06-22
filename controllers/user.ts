@@ -130,7 +130,6 @@ export const updateCurrentUser = catchAsync(
     const userId = req.user;
 
     const { name, email } = req.body;
-    console.log(req.body);
 
     if (!name && !email) {
       return next(new AppError("Please provide name or email to update", 400));

@@ -3,6 +3,7 @@ import { catchAsync } from "../utils/asyncHandler";
 import mongoose from "mongoose";
 import { AppError } from "../utils/AppError";
 import User from "../models/user";
+import { json } from "stream/consumers";
 
 // Base product structure (no Mongoose methods)
 export interface IProduct {
@@ -83,9 +84,13 @@ export const addProductToUserWishList = catchAsync(
       return next(new AppError("Product is required", 403));
     }
 
-    await User.findByIdAndUpdate(req.user, {
-      $addToSet: { wishList: productId },
-    });
+    const user = await User.findByIdAndUpdate(
+      req.user,
+      {
+        $addToSet: { wishList: productId },
+      },
+      { new: true }
+    );
 
     res.status(200).json({
       success: true,
@@ -131,6 +136,28 @@ export const getRecentlyAddedProducts = catchAsync(
   }
 );
 
+export const getWishlistProducts = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = await User.findById(req.user);
+
+    if (!user) {
+      return next(new AppError("User not found", 404));
+    }
+
+    const ids = user.wishList;
+
+    const products = await Product.find({
+      _id: { $in: ids },
+    }).lean();
+
+    res.status(200).json({
+      message: "wishlist products retrieved",
+      status: "success",
+      products,
+    });
+  }
+);
+
 export const searchProducts = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const {
@@ -156,6 +183,7 @@ export const searchProducts = catchAsync(
     if (category) {
       filter.category = category;
     }
+    filter.isActive = true;
 
     if (minPrice || maxPrice) {
       filter.price = {};
