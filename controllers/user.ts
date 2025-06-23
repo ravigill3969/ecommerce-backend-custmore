@@ -186,3 +186,21 @@ export const updateUserPassword = catchAsync(
     sendResWithCookies(user._id, res);
   }
 );
+
+
+export const deleteUserById = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.id;
+
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ message: "User deleted successfully", deletedUser });
+  } catch (error) {
+    console.error("Delete user error:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
