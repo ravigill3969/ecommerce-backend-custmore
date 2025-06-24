@@ -2,6 +2,7 @@ import express from "express";
 import {
   getCurrentUser,
   login,
+  logout,
   register,
   updateCurrentUser,
   updateUserPassword,
@@ -13,6 +14,7 @@ const userRouter = express.Router();
 
 userRouter.post("/register", register);
 userRouter.post("/login", login);
+userRouter.get("/logout", verifyToken, logout);
 userRouter.get("/verify-user", verifyToken, verifyUser);
 userRouter.get("/get-current-user", verifyToken, getCurrentUser);
 userRouter.get("/refresh-token", refreshToken);

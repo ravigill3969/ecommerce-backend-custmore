@@ -15,11 +15,12 @@ export const addToCart = catchAsync(
     const existingCart = await Cart.findOne({ userId, status: "Initialized" });
 
     if (!existingCart) {
-      await Cart.create({
+      const cart = await Cart.create({
         userId,
         items: [{ productId, quantity: 1, price }],
       });
 
+      console.log(cart._id);
       return res.status(201).json({
         success: true,
         message: "Cart created successfully",
@@ -54,7 +55,7 @@ export const getCart = catchAsync(
     });
 
     if (!cart) {
-      return next(new AppError("No cart found!", 404));
+      return next(new AppError("Cart is empty!", 200));
     }
 
     const products = await Promise.all(
@@ -117,7 +118,6 @@ export const decrementProductQuantity = async (
 };
 
 export const getAlreadyPaidOrder = catchAsync(
-  
   async (req: Request, res: Response, next: NextFunction) => {
     const user = await User.findById(req.user);
 
@@ -127,6 +127,8 @@ export const getAlreadyPaidOrder = catchAsync(
 
     const cartIDs = user.prevOrders;
 
+    console.log(cartIDs);
+
     const carts = await Cart.find({
       _id: { $in: cartIDs },
     }).lean();
@@ -134,8 +136,7 @@ export const getAlreadyPaidOrder = catchAsync(
     res.status(200).json({
       status: "success",
       message: "all prev orders reterieved",
-      carts
+      carts,
     });
   }
 );
-

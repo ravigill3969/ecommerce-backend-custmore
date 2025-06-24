@@ -34,7 +34,7 @@ async function kafkaConsumer() {
         );
 
         const user = await User.findByIdAndUpdate(userID, {
-          $set: { prevOrders: cartID },
+          $addToSet: { prevOrders: cartID },
         });
 
         if (!cart) {

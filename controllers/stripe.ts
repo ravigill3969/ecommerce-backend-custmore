@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { Product } from "../controllers/product";
-import KafkaProducer from "../utils/kafka/kafka-producer";
+import { KafkaProducerOrderSuccess } from "../utils/kafka/kafka-producer";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -110,7 +110,7 @@ export const handle_payment_success = catchAsync(
     }
 
     try {
-      await KafkaProducer(cartID, req.user);
+      await KafkaProducerOrderSuccess(cartID, req.user);
     } catch (err) {
       return next(new AppError("Internal error: Kafka dispatch failed", 500));
     }
