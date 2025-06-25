@@ -3,7 +3,11 @@ import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../utils/asyncHandler";
 import { AppError } from "../utils/AppError";
 import { Product } from "../controllers/product";
-import { KafkaProducerOrderSuccess } from "../utils/kafka/kafka-producer";
+import {
+  KafkaProducerOrderSuccess,
+  KafkaVendorProducerForNotification,
+} from "../utils/kafka/kafka-producer";
+import { sendEmail } from "../utils/nodemailer";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -102,6 +106,8 @@ export const handle_payment_success = catchAsync(
     if (paymentIntent.status !== "succeeded") {
       return next(new AppError("Payment not completed", 402));
     }
+
+    await sendEmail();
 
     const cartID = session.metadata?.cartId;
 

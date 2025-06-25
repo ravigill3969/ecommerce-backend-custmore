@@ -15,7 +15,6 @@ import {
   decrementProductQuantity,
   incrementProductQuantity,
 } from "./controllers/cart";
-import { createPaymentIntent } from "./controllers/stripe";
 import stripeRouter from "./routes/stripe";
 import kafkaConsumer from "./utils/kafka/kafka-consumer";
 
@@ -85,6 +84,7 @@ io.on("connection", (socket) => {
       });
     }
   });
+
   socket.on("cart-decrement", async ({ productId, userId }) => {
     console.log("Message received decrement:", productId, userId);
     const res = await decrementProductQuantity(productId, userId);

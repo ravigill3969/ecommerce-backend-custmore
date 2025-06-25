@@ -23,7 +23,13 @@ export async function KafkaProducerOrderSuccess(
   await producer.disconnect();
 }
 
-export async function KafkaVendorProducer(vendorID: string, orderID: string) {
+export async function KafkaVendorProducerForNotification(
+  data: {
+    vendorID: string;
+    productID: string;
+    quantity: number;
+  }[]
+) {
   const producer = kafka.producer();
 
   console.log("Connecting Vendor Producer");
@@ -35,7 +41,7 @@ export async function KafkaVendorProducer(vendorID: string, orderID: string) {
     messages: [
       {
         key: "order-notification",
-        value: JSON.stringify({ vendorID, orderID }),
+        value: JSON.stringify(data),
       },
     ],
   });
