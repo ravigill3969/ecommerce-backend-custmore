@@ -54,8 +54,8 @@ export const getCart = catchAsync(
       status: "Initialized",
     });
 
-    if (!cart) {
-      return next(new AppError("Cart is empty!", 200));
+    if (!(cart && cart._id)) {
+      return next(new AppError("Cart is empty or invalid!", 400));
     }
 
     const products = await Promise.all(
@@ -140,3 +140,4 @@ export const getAlreadyPaidOrder = catchAsync(
     });
   }
 );
+  

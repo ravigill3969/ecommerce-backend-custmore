@@ -5,7 +5,6 @@ import { AppError } from "../utils/AppError";
 import User from "../models/user";
 import { json } from "stream/consumers";
 
-// Base product structure (no Mongoose methods)
 export interface IProduct {
   productName: string;
   sellerID: mongoose.Types.ObjectId;
@@ -120,10 +119,10 @@ export const removeProductFromUserWishList = catchAsync(
 
 export const getRecentlyAddedProducts = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const limit = parseInt(req.query.limit as string) || 10; // optional limit from query string
+    const limit = parseInt(req.query.limit as string) || 10;
 
-    const products = await Product.find()
-      .sort({ createdAt: -1 }) // newest first
+    const products = await Product.find({ isActive: true })
+      .sort({ createdAt: -1 })
       .limit(limit);
 
     res.status(200).json({
