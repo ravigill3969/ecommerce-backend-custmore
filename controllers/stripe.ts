@@ -8,6 +8,8 @@ import {
   KafkaVendorProducerForNotification,
 } from "../utils/kafka/kafka-producer";
 import { sendEmail } from "../utils/nodemailer";
+import User from "../models/user";
+import { Cart } from "../models/cart";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -107,7 +109,7 @@ export const handle_payment_success = catchAsync(
       return next(new AppError("Payment not completed", 402));
     }
 
-    await sendEmail();
+    // await sendEmail();
 
     const cartID = session.metadata?.cartId;
 
@@ -115,10 +117,32 @@ export const handle_payment_success = catchAsync(
       return res.status(400).json({ error: "Missing cart_id in metadata" });
     }
 
-    try {
-      await KafkaProducerOrderSuccess(cartID, req.user);
-    } catch (err) {
-      return next(new AppError("Internal error: Kafka dispatch failed", 500));
+    // try {
+    //   await KafkaProducerOrderSuccess(cartID, req.user);
+    // } catch (err) {
+    //   return next(new AppError("Internal error: Kafka dispatch failed", 500));
+    // }
+
+    const cart = await Cart.findOneAndUpdate(
+      { _id: cartID },
+      { $set: { status: "Paid" } },
+      { new: true }
+    );
+
+    const user = await User.findByIdAndUpdate(req.user, {
+      $addToSet: { prevOrders: cartID },
+    });
+
+    if (!cart) {
+      console.warn(`[Kafka] Cart not found for ID: ${cartID}`);
+    } else {
+      console.log(`[Kafka] Cart updated: ${cart._id} -> ${cart.status}`);
+    }
+
+    if (!user) {
+      console.warn(`[Kafka] user not found for ID: ${req.user}`);
+    } else {
+      console.log(`[Kafka] user updated: ${user._id} -> ${user.prevOrders}`);
     }
 
     return res.status(200).json({

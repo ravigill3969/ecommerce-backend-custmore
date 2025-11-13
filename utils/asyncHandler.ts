@@ -1,12 +1,10 @@
 // src/middleware/asyncHandler.ts
 import { Request, Response, NextFunction } from "express";
 
-
-
 type AsyncRequestHandler = (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => Promise<any>;
 
 /**
@@ -17,11 +15,7 @@ type AsyncRequestHandler = (
  * @returns Express middleware function
  */
 export const catchAsync = (fn: any) => {
-  return (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };

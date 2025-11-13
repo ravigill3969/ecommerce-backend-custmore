@@ -60,7 +60,6 @@ const sendProdError = (err: AppError, res: Response): void => {
     return;
   }
 
-  console.error("ERROR 💥", err);
   res.status(500).json({
     status: "error",
     message: "Something went wrong",
@@ -100,7 +99,6 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): void => {
-  console.log(err);
   let error = err;
   error.statusCode = error.statusCode || 500;
   error.status = error.status || "error";

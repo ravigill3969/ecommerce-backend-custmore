@@ -52,14 +52,14 @@ app.use(
 
 const PORT = process.env.PORT;
 
-(async () => {
-  try {
-    console.log("trying to consumer kafka");
-    await kafkaConsumer();
-  } catch (err) {
-    console.error("Error starting Kafka consumer or server:", err);
-  }
-})();
+// (async () => {
+//   try {
+//     console.log("trying to consumer kafka");
+//     await kafkaConsumer();
+//   } catch (err) {
+//     console.error("Error starting Kafka consumer or server:", err);
+//   }
+// })();
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

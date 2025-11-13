@@ -32,9 +32,7 @@ export async function KafkaVendorProducerForNotification(
 ) {
   const producer = kafka.producer();
 
-  console.log("Connecting Vendor Producer");
   await producer.connect();
-  console.log("Vendor Producer Connected Successfully");
 
   await producer.send({
     topic: "vendor-updates",

@@ -18,8 +18,8 @@ export async function sendEmail() {
     html: "<b>This is a test email using Ethereal SMTP</b>",
   });
 
-  console.log("✅ Email sent:", info.messageId);
-  console.log("🔗 Preview URL:", nodemailer.getTestMessageUrl(info));
+  // console.log("✅ Email sent:", info.messageId);
+  // console.log("🔗 Preview URL:", nodemailer.getTestMessageUrl(info));
 }
 
-sendEmail().catch(console.error);
+// sendEmail().catch(console.error);

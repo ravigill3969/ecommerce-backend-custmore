@@ -127,8 +127,6 @@ export const getAlreadyPaidOrder = catchAsync(
 
     const cartIDs = user.prevOrders;
 
-    console.log(cartIDs);
-
     const carts = await Cart.find({
       _id: { $in: cartIDs },
     }).lean();
@@ -140,4 +138,23 @@ export const getAlreadyPaidOrder = catchAsync(
     });
   }
 );
-  
+
+export const removeItemFromCart = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { cartID, productID } = req.body;
+
+    const result = await Cart.updateOne(
+      { _id: cartID },
+      { $pull: { items: { productId: productID } } }
+    );
+
+    if (!result.matchedCount || !result.modifiedCount) {
+      return next(new AppError("Cart not found or product not in cart!", 400));
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Removed item from cart",
+    });
+  }
+);
