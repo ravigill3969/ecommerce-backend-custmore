@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { catchAsync } from "../utils/asyncHandler";
 import { NextFunction, Request, Response } from "express";
 import { AppError } from "../utils/AppError";
-import redis from "../utils/redis/i";
+import redis from "../utils/redis/redis";
 
 function accessToken(id: string) {
   return jwt.sign({ id }, process.env.ACCESS_TOKEN_SECRET!, {

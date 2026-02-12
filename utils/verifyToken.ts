@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/user";
 import { catchAsync } from "./asyncHandler";
 import { AppError } from "./AppError";
-import redis from "./redis/i";
+import redis from "./redis/redis";
 import { sendResWithCookies } from "../controllers/user";
 
 declare global {

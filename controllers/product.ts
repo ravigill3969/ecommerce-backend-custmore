@@ -3,7 +3,7 @@ import { catchAsync } from "../utils/asyncHandler";
 import mongoose from "mongoose";
 import { AppError } from "../utils/AppError";
 import User from "../models/user";
-import { json } from "stream/consumers";
+
 
 export interface IProduct {
   productName: string;

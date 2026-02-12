@@ -26,6 +26,7 @@ mongoose
     console.log("connected to db: " + e.version);
   })
   .catch((e) => {
+    console.error(e);
     console.log("coonection failed to DB");
   });
 
@@ -47,6 +48,7 @@ app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
+    preflightContinue: true,
   })
 );
 
