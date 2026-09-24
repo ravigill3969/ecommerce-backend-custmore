@@ -46,7 +46,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://ecommerce-backend-custmore.onrender.com",
     credentials: true,
     preflightContinue: true,
   }),
