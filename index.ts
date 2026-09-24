@@ -46,7 +46,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "https://ecommerce-backend-custmore.onrender.com",
+    origin: "https://ecommerce-frontend-customer.onrender.com",
     credentials: true,
     preflightContinue: true,
   }),
