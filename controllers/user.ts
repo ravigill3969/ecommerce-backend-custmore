@@ -33,7 +33,7 @@ export async function sendResWithCookies(id: string, res: Response) {
   res.cookie("refresh_token", refresh, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "none",
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
@@ -208,7 +208,7 @@ export const logout = catchAsync(
     res.cookie("access_token", "good_luck", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "none",
       maxAge: Date.now(),
     });
 
