@@ -26,7 +26,7 @@ export async function sendResWithCookies(id: string, res: Response) {
   res.cookie("access_token", access, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "none",
     maxAge: 15 * 60 * 1000,
   });
 
